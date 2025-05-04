@@ -3,8 +3,8 @@ import tensorflow as tf
 import numpy as np
 import pandas as pd
 import altair as alt
-# import keras
-import cv2
+#import keras
+#import cv2 
 from PIL import Image, ImageOps
 #bug reason - the preproess function used in inference is not same with training preprocess function
 # from tensorflow.keras.applications.resnet50 import preprocess_input
@@ -64,13 +64,14 @@ def classify_preprop(image_file):
 def segment_preprop(image_file):
     segmentInputShape = (256, 256)
     image = Image.open(BytesIO(image_file)).convert('RGB')
+    image = image.resize(segmentInputShape)
     image = np.array(image)
-    image = cv2.resize(image, segmentInputShape)
-    #Normalize 
+    # Normalize 
     image = image / 255.0
     image = img_to_array(image)
     image = np.expand_dims(image, axis=0)
     return image
+
 
 def segment_postprop(image, mask):   
     #Apply mask to image then return the masked image
