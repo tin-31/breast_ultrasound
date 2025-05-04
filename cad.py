@@ -117,11 +117,11 @@ if app_mode=='Thông tin chung':
     
     st.markdown('<p class="big-font"> Học sinh thực hiện </p>', unsafe_allow_html=True)
     st.markdown('<p class="name"> Lê Vũ Anh Tin - 10TH </p>', unsafe_allow_html=True)
-    tin_ava = Image.open('member/Tin.jpg')
+    tin_ava = Image.open('Tin.jpg')
     st.image(tin_ava)
     st.markdown('<p class="big-font"> Trường học tham gia cuộc thi KHKT-Khởi nghiệp </p>', unsafe_allow_html=True)
     st.markdown('<p class="name"> Trường THPT chuyên Nguyễn Du </p>', unsafe_allow_html=True)
-    school_ava = Image.open('member/school.jpg')
+    school_ava = Image.open('school.jpg')
     st.image(school_ava)
     
 elif app_mode=='Ứng dụng chẩn đoán':
