@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import altair as alt
 # import keras
-#import cv2
+import cv2
 from PIL import Image, ImageOps
 #bug reason - the preproess function used in inference is not same with training preprocess function
 # from tensorflow.keras.applications.resnet50 import preprocess_input
