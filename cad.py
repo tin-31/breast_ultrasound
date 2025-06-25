@@ -3,8 +3,8 @@ import tensorflow as tf
 import numpy as np
 import pandas as pd
 import altair as alt
-# import keras
-import cv2
+#import keras
+#import cv2 
 from PIL import Image, ImageOps
 #bug reason - the preproess function used in inference is not same with training preprocess function
 # from tensorflow.keras.applications.resnet50 import preprocess_input
@@ -13,12 +13,9 @@ from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.preprocessing import image
 # from tensorflow.keras.preprocessing.image import load_img
 from io import BytesIO
-
 your_path = r""
-
 # st.set_option('deprecation.showfileUploaderEncoding', False)
 # @st.cache(allow_output_mutation=True)
-
 def load_model():
     def dice_loss(y_true, y_pred):
         # Flatten the predictions and ground truth
@@ -67,13 +64,14 @@ def classify_preprop(image_file):
 def segment_preprop(image_file):
     segmentInputShape = (256, 256)
     image = Image.open(BytesIO(image_file)).convert('RGB')
+    image = image.resize(segmentInputShape)
     image = np.array(image)
-    image = cv2.resize(image, segmentInputShape)
-    #Normalize 
+    # Normalize 
     image = image / 255.0
     image = img_to_array(image)
     image = np.expand_dims(image, axis=0)
     return image
+
 
 def segment_postprop(image, mask):   
     #Apply mask to image then return the masked image
@@ -99,7 +97,7 @@ def preprocessing_uploader(file, classifier, segmentor):
     segment_output = segmentor.predict(image_to_segment)[0]
     segment_output = segment_postprop(image_to_segment, segment_output)
     return classify_output,segment_output
-app_mode = st.sidebar.selectbox('Chọn trang',['Thông tin chung','Thống kê về dữ liệu huấn luyện','Ứng dụng chẩn đoán']) #two pages
+app_mode = st.sidebar.selectbox('Chọn trang',['Thông tin chung','Ứng dụng chẩn đoán']) #two pages
 if app_mode=='Thông tin chung':
     st.title('Giới thiệu về thành viên')
     st.markdown("""
@@ -119,29 +117,12 @@ if app_mode=='Thông tin chung':
     
     st.markdown('<p class="big-font"> Học sinh thực hiện </p>', unsafe_allow_html=True)
     st.markdown('<p class="name"> Lê Vũ Anh Tin - 10TH </p>', unsafe_allow_html=True)
-    tin_ava = Image.open('member/Tin.jpg')
+    tin_ava = Image.open('Tin.jpg')
     st.image(tin_ava)
-
     st.markdown('<p class="big-font"> Trường học tham gia cuộc thi KHKT-Khởi nghiệp </p>', unsafe_allow_html=True)
     st.markdown('<p class="name"> Trường THPT chuyên Nguyễn Du </p>', unsafe_allow_html=True)
-    school_ava = Image.open('member/school.jpg')
+    school_ava = Image.open('school.jpg')
     st.image(school_ava)
-   
-
-elif app_mode=='Thống kê về dữ liệu huấn luyện': 
-    st.title('Thống kê tổng quan về tập dữ liệu')
-    
-    st.markdown("""
-    <style>
-    .big-font {
-    font-size:30px !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    st.caption('Tập dữ liệu ảnh siêu âm vú được lấy từ kho lưu trữ công cộng do bệnh viện Baheya, Cairo, Ai Cập cung cấp. Dữ liệu được thu thập lúc ban đầu bao gồm hình ảnh siêu âm vú ở phụ nữ trong độ tuổi từ 25 đến 75 tuổi. Số liệu này được thu thập vào năm 2018. Số lượng bệnh nhân là 600 bệnh nhân nữ. Bộ dữ liệu bao gồm 780 hình ảnh với kích thước hình ảnh trung bình là 500 * 500 pixel. Các hình ảnh có định dạng PNG. Hình ảnh được chia làm 3 loại là bình thường, lành tính và ác tính. ')
-    st.caption('Nội dung nghiên cứu khoa học và ứng dụng của nhóm được thiết kế dựa trên việc huấn luyện nhóm dữ liệu Breast Ultrasound Images Dataset. Dữ liệu đã được tiền xử lý và thay đổi kích thước về 256 x 256. Thông tin chi tiết của tập dữ liệu có thể tìm được ở dưới đây: ')
-    st.caption('*"https://www.kaggle.com/datasets/aryashah2k/breast-ultrasound-images-dataset/data"*')
-    
     
 elif app_mode=='Ứng dụng chẩn đoán':
     classifier, segmentor = load_model()
@@ -185,18 +166,3 @@ elif app_mode=='Ứng dụng chẩn đoán':
         st.write('- **Xác suất bệnh nhân có khối u lành tính là**: *{}%*'.format(round(classify_output[0,0] *100,2)))
         st.write('- **Xác suất bệnh nhân mắc ung thư vú là**: *{}%*'.format(round(classify_output[0,1] *100,2)))
         st.write('- **Xác suất bệnh nhân khỏe mạnh là**: *{}%*'.format(round(classify_output[0,2] *100,2)))
- 
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
