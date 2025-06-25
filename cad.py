@@ -1,42 +1,3 @@
-import streamlit as st
-import tensorflow as tf
-import numpy as np
-import pandas as pd
-import altair as alt
-#import keras
-#import cv2 
-from PIL import Image, ImageOps
-#bug reason - the preproess function used in inference is not same with training preprocess function
-# from tensorflow.keras.applications.resnet50 import preprocess_input
-from tensorflow.keras.applications.efficientnet import preprocess_input
-from tensorflow.keras.preprocessing.image import img_to_array
-from tensorflow.keras.preprocessing import image
-# from tensorflow.keras.preprocessing.image import load_img
-from io import BytesIO
-your_path = r""
-# st.set_option('deprecation.showfileUploaderEncoding', False)
-# @st.cache(allow_output_mutation=True)
-def load_model():
-    def dice_loss(y_true, y_pred):
-        # Flatten the predictions and ground truth
-        y_true_flat = tf.reshape(y_true, [-1])
-        y_pred_flat = tf.reshape(y_pred, [-1])
-
-        # Compute the intersection and union
-        intersection = tf.reduce_sum(y_true_flat * y_pred_flat)
-        union = tf.reduce_sum(y_true_flat) + tf.reduce_sum(y_pred_flat)
-
-        # Compute the Dice loss
-        dice_loss = 1 - 2 * intersection / union
-
-        return dice_loss
-    
-    classifier = tf.keras.models.load_model('Classifier_model_2.h5')
-    segmentor = tf.keras.models.load_model('Seg_model.h5', custom_objects={'dice_loss': dice_loss})
-    return classifier, segmentor
-
-
-def predict_class(image, model):
 # 	image = tf.cast(image, tf.float32)
 	image = np.resize(image, (224,224))
 # 	image_1 = image
@@ -64,14 +25,13 @@ def classify_preprop(image_file):
 def segment_preprop(image_file):
     segmentInputShape = (256, 256)
     image = Image.open(BytesIO(image_file)).convert('RGB')
-    image = image.resize(segmentInputShape)
     image = np.array(image)
-    # Normalize 
+    image = cv2.resize(image, segmentInputShape)
+    #Normalize 
     image = image / 255.0
     image = img_to_array(image)
     image = np.expand_dims(image, axis=0)
     return image
-
 
 def segment_postprop(image, mask):   
     #Apply mask to image then return the masked image
@@ -117,11 +77,11 @@ if app_mode=='Thông tin chung':
     
     st.markdown('<p class="big-font"> Học sinh thực hiện </p>', unsafe_allow_html=True)
     st.markdown('<p class="name"> Lê Vũ Anh Tin - 10TH </p>', unsafe_allow_html=True)
-    tin_ava = Image.open('Tin.jpg')
+    tin_ava = Image.open('member/Tin.jpg')
     st.image(tin_ava)
     st.markdown('<p class="big-font"> Trường học tham gia cuộc thi KHKT-Khởi nghiệp </p>', unsafe_allow_html=True)
     st.markdown('<p class="name"> Trường THPT chuyên Nguyễn Du </p>', unsafe_allow_html=True)
-    school_ava = Image.open('school.jpg')
+    school_ava = Image.open('member/school.jpg')
     st.image(school_ava)
     
 elif app_mode=='Ứng dụng chẩn đoán':
