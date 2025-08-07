@@ -8,3 +8,5 @@ opencv-python
 gspread
 google-auth
 google-api-python-client
+tensorflow==2.6.0
+h5py
