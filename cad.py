@@ -97,7 +97,7 @@ def preprocessing_uploader(file, classifier, segmentor):
     segment_output = segmentor.predict(image_to_segment)[0]
     segment_output = segment_postprop(image_to_segment, segment_output)
     return classify_output,segment_output
-app_mode = st.sidebar.selectbox('Chọn trang',['Thông tin chung','Thống kê về dữ liệu huấn luyện','Ứng dụng chẩn đoán']) #two pages
+app_mode = st.sidebar.selectbox('Chọn trang',['Ứng dụng chẩn đoán', 'Thông tin chung','Thống kê về dữ liệu huấn luyện']) #two pages
 if app_mode=='Thông tin chung':
     st.title('Giới thiệu về thành viên')
     st.markdown("""
@@ -167,6 +167,63 @@ elif app_mode=='Ứng dụng chẩn đoán':
         elif str(result_name) == 'normal':
             statement = str('Chẩn đoán của mô hình học máy: **Không có dấu hiệu khối u ở vú.**')
         slot.success('Hoàn tất!')
+from google.oauth2 import service_account
+import gspread
+from datetime import datetime
+import base64
+
+# Load credentials
+creds = service_account.Credentials.from_service_account_file(
+    "breast_ultrasound_service_account.json",
+    scopes=[
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive"
+    ]
+)
+
+# Connect to Google Sheets
+gc = gspread.authorize(creds)
+sh = gc.open_by_key("YOUR_SHEET_ID")   # <--- Thay bằng ID sheet của bạn
+worksheet = sh.sheet1
+
+# Lưu ảnh vào Drive
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaInMemoryUpload
+
+drive_service = build('drive', 'v3', credentials=creds)
+
+# Đọc file bytes
+file_bytes = file.getvalue()
+
+# Tạo metadata file
+file_metadata = {
+    'name': f"ultrasound_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png",
+    'parents': ['1MNgXaIZsWuxLb6JfE8eiANbXn5Rwxu8G']   # <--- Thay bằng ID folder Drive bạn tạo
+}
+
+media = MediaInMemoryUpload(file_bytes, mimetype='image/png')
+
+uploaded_file = drive_service.files().create(
+    body=file_metadata,
+    media_body=media,
+    fields='id'
+).execute()
+
+file_id = uploaded_file.get('id')
+file_url = f"https://drive.google.com/uc?id={file_id}"
+
+# Thời gian
+timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+# Ghi dữ liệu vào Sheet
+worksheet.append_row([
+    timestamp,
+    result_name,
+    round(classify_output[0,0]*100,2),
+    round(classify_output[0,1]*100,2),
+    round(classify_output[0,2]*100,2),
+    file_url
+])
 
 #         st.success(output)
      
