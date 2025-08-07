@@ -97,7 +97,7 @@ def preprocessing_uploader(file, classifier, segmentor):
     return classify_output, segment_output
 
 # === UI ===
-app_mode = st.sidebar.selectbox('Chọn trang', ['Thông tin chung', 'Thống kê về dữ liệu huấn luyện', 'Ứng dụng chẩn đoán'])
+app_mode = st.sidebar.selectbox('Chọn trang', ['Ứng dụng chẩn đoán', 'Thông tin chung', 'Thống kê về dữ liệu huấn luyện'])
 
 if app_mode == 'Thông tin chung':
     st.title('Giới thiệu về thành viên')
@@ -168,3 +168,4 @@ elif app_mode == 'Ứng dụng chẩn đoán':
         st.write('- **Bình thường**: *{}%*'.format(round(classify_output[0,2]*100, 2)))
     else:
         st.text('Vui lòng tải lên ảnh để chẩn đoán.')
+
