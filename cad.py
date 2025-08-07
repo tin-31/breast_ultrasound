@@ -23,7 +23,9 @@ def connect_google_services():
         "https://www.googleapis.com/auth/drive.file",
         "https://www.googleapis.com/auth/drive.appdata"
     ]
-    creds = Credentials.from_service_account_file("breast_ultrasound_service_account.json", scopes=scope)
+    import json
+    creds = Credentials.from_service_account_info(json.loads(st.secrets["google"]["service_account_info"]), scopes=scope)
+
     gc = gspread.authorize(creds)
     drive_service = build('drive', 'v3', credentials=creds)
     return gc, drive_service
@@ -158,3 +160,4 @@ elif app_mode == 'Ứng dụng chẩn đoán':
 
     else:
         st.info("Vui lòng tải ảnh để bắt đầu.")
+
