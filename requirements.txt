@@ -1,5 +1,5 @@
-streamlit==1.30.0
-tensorflow==2.6.0
+streamlit
+tensorflow
 numpy
 pandas
 altair
@@ -10,3 +10,4 @@ google-auth
 google-auth-oauthlib
 google-api-python-client
 h5py
+
