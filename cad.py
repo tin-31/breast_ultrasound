@@ -14,7 +14,7 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 
-# === GOOGLE SETUP ===
+# ====== GOOGLE SETUP ======
 def connect_google_services():
     scope = [
         "https://spreadsheets.google.com/feeds",
@@ -23,24 +23,24 @@ def connect_google_services():
         "https://www.googleapis.com/auth/drive.file",
         "https://www.googleapis.com/auth/drive.appdata"
     ]
-    creds = Credentials.from_service_account_file("your_service_account.json", scopes=scope)
+    creds = Credentials.from_service_account_file("breast_ultrasound_service_account.json", scopes=scope)
     gc = gspread.authorize(creds)
     drive_service = build('drive', 'v3', credentials=creds)
     return gc, drive_service
 
-def upload_to_drive(file, drive_service):
+def upload_to_drive(image_bytes, drive_service):
     file_id = str(uuid.uuid4())
     file_metadata = {
         'name': f"{file_id}.png",
-        'parents': ['1MNgXaIZsWuxLb6JfE8eiANbXn5Rwxu8G'],  # Thay bằng folder ID Google Drive
+        'parents': ['1MNgXaIZsWuxLb6JfE8eiANbXn5Rwxu8G'],  # Google Drive folder ID
     }
-    media = MediaIoBaseUpload(file, mimetype='image/png')
+    media = MediaIoBaseUpload(BytesIO(image_bytes), mimetype='image/png')
     uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
     return uploaded_file.get('id')
 
 def write_to_sheet(gc, prediction, image_drive_id):
-    sh = gc.open_by_key("1yfnttAYT93SipMKfHW6tGoRBMQYTz7wwZ970cQp7HiE")  # Google Sheet ID
-    worksheet = sh.sheet1
+    sheet_id = "1yfnttAYT93SipMKfHW6tGoRBMQYTz7wwZ970cQp7HiE"  # Google Sheet ID
+    worksheet = gc.open_by_key(sheet_id).sheet1
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     result_name = ['Lành tính', 'Ác tính', 'Bình thường'][np.argmax(prediction)]
     row = [
@@ -53,7 +53,7 @@ def write_to_sheet(gc, prediction, image_drive_id):
     ]
     worksheet.append_row(row)
 
-# === LOAD MODEL ===
+# ====== MODEL LOADING ======
 def load_model():
     def dice_loss(y_true, y_pred):
         y_true_flat = tf.reshape(y_true, [-1])
@@ -66,16 +66,16 @@ def load_model():
     segmentor = tf.keras.models.load_model('Seg_model.h5', custom_objects={'dice_loss': dice_loss})
     return classifier, segmentor
 
-# === IMAGE PREPROCESSING ===
-def classify_preprop(image_file): 
-    image = Image.open(BytesIO(image_file)).convert("RGB")
+# ====== IMAGE PREPROCESSING ======
+def classify_preprop(image_bytes): 
+    image = Image.open(BytesIO(image_bytes)).convert("RGB")
     image = image.resize((224, 224))
     image = img_to_array(image)
     image = np.expand_dims(image, axis=0)
     return preprocess_input(image)
 
-def segment_preprop(image_file):
-    image = Image.open(BytesIO(image_file)).convert('RGB')
+def segment_preprop(image_bytes):
+    image = Image.open(BytesIO(image_bytes)).convert('RGB')
     image = image.resize((256, 256))
     image = np.array(image) / 255.0
     image = img_to_array(image)
@@ -87,16 +87,16 @@ def segment_postprop(image, mask):
     mask = np.expand_dims(mask, axis=2)
     return image * mask
 
-def preprocessing_uploader(file, classifier, segmentor):
-    image_file = file.read()
-    image_to_classify = classify_preprop(image_file)
-    image_to_segment = segment_preprop(image_file)
-    classify_output = classifier.predict(image_to_classify)
-    segment_output = segmentor.predict(image_to_segment)[0]
-    segment_output = segment_postprop(image_to_segment, segment_output)
+def predict_models(image_bytes, classifier, segmentor):
+    image_for_classify = classify_preprop(image_bytes)
+    image_for_segment = segment_preprop(image_bytes)
+
+    classify_output = classifier.predict(image_for_classify)
+    segment_output = segmentor.predict(image_for_segment)[0]
+    segment_output = segment_postprop(image_for_segment, segment_output)
     return classify_output, segment_output
 
-# === UI STREAMLIT ===
+# ====== STREAMLIT UI ======
 st.set_page_config(page_title="Ứng dụng chẩn đoán ung thư vú", layout="wide")
 app_mode = st.sidebar.selectbox('Chọn trang', ['Thông tin chung', 'Thống kê về dữ liệu huấn luyện', 'Ứng dụng chẩn đoán'])
 
@@ -120,32 +120,31 @@ elif app_mode == 'Ứng dụng chẩn đoán':
     st.title('Ứng dụng chẩn đoán ung thư vú dựa trên ảnh siêu âm')
 
     classifier, segmentor = load_model()
-    file = st.file_uploader("Vui lòng tải ảnh siêu âm vú (jpg hoặc png)", type=["jpg", "png"])
+    file = st.file_uploader("Tải ảnh siêu âm vú (jpg hoặc png):", type=["jpg", "png"])
 
     if file:
-        st.image(file, caption="Ảnh đầu vào", width=400)
+        image_bytes = file.read()
+        st.image(image_bytes, caption="Ảnh đầu vào", width=400)
 
-        with st.spinner('Hệ thống đang xử lý...'):
-            # Google Drive & Sheets
+        with st.spinner("Đang chẩn đoán..."):
             gc, drive_service = connect_google_services()
-            file.seek(0)
-            image_drive_id = upload_to_drive(file, drive_service)
-            file.seek(0)
-            classify_output, segment_output = preprocessing_uploader(file, classifier, segmentor)
+            image_drive_id = upload_to_drive(image_bytes, drive_service)
+            classify_output, segment_output = predict_models(image_bytes, classifier, segmentor)
             write_to_sheet(gc, classify_output, image_drive_id)
 
         class_names = ['benign', 'malignant', 'normal']
-        result = class_names[np.argmax(classify_output)]
+        result_label = class_names[np.argmax(classify_output)]
 
         st.image(segment_output, caption="Ảnh phân vùng khối u", width=400)
 
-        if result == 'benign':
+        if result_label == 'benign':
             st.error('Kết quả: **Khối u lành tính.**')
-        elif result == 'malignant':
+        elif result_label == 'malignant':
             st.warning('Kết quả: **Bệnh nhân mắc ung thư vú.**')
         else:
             st.success('Kết quả: **Không phát hiện khối u.**')
 
+        # Biểu đồ xác suất
         bar_data = pd.DataFrame({
             'Loại chẩn đoán': ["Lành tính", "Ác tính", "Bình thường"],
             'Xác suất dự đoán (%)': [classify_output[0,0]*100, classify_output[0,1]*100, classify_output[0,2]*100]
@@ -158,4 +157,4 @@ elif app_mode == 'Ứng dụng chẩn đoán':
         st.write(f'- **Bình thường**: *{round(classify_output[0,2]*100, 2)}%*')
 
     else:
-        st.info('Vui lòng tải ảnh lên để bắt đầu chẩn đoán.')
+        st.info("Vui lòng tải ảnh để bắt đầu.")
