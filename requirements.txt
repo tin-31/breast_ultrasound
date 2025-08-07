@@ -5,3 +5,5 @@ pandas
 altair
 Pillow
 opencv-python
+gspread
+google-auth
