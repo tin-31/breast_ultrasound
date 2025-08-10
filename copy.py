@@ -113,7 +113,7 @@ def preprocessing_uploader(file, classifier, segmentor):
     segment_output = segmentor.predict(image_to_segment)[0]
     segment_output = segment_postprop(image_to_segment, segment_output)
     return classify_output,segment_output
-app_mode = st.sidebar.selectbox('Chọn trang',['Thông tin chung','Thống kê về dữ liệu huấn luyện','Ứng dụng chẩn đoán']) #two pages
+app_mode = st.sidebar.selectbox('Chọn trang',['Ứng dụng chẩn đoán', 'Thông tin chung','Thống kê về dữ liệu huấn luyện']) #two pages
 if app_mode=='Thông tin chung':
     st.title('Giới thiệu về thành viên')
     st.markdown("""
