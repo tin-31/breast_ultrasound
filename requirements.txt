@@ -5,3 +5,4 @@ pandas
 altair
 Pillow
 opencv-python
+scikit-learn
