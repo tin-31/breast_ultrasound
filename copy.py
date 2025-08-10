@@ -1,3 +1,19 @@
+import os
+import gdown
+
+# Model phân đoạn
+seg_model_path = "Seg_model.h5"
+seg_model_id = "1AFELnyGbT_bjzMscNLancCDerYxZRjAu"
+if not os.path.exists(seg_model_path):
+    gdown.download(f"https://drive.google.com/uc?id={seg_model_id}", seg_model_path, quiet=False)
+
+# Model phân loại
+clf_model_path = "Classifier_model_2.h5"
+clf_model_id = "1fXPICuTkETep2oPiA56l0uMai2GusEJH"
+if not os.path.exists(clf_model_path):
+    gdown.download(f"https://drive.google.com/uc?id={clf_model_id}", clf_model_path, quiet=False)
+
+# ... các import khác và code Streamlit của bạn ...
 import streamlit as st
 import tensorflow as tf
 import numpy as np
