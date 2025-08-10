@@ -6,3 +6,4 @@ altair
 Pillow
 opencv-python
 scikit-learn
+gdown
