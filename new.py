@@ -153,7 +153,7 @@ elif app_mode=='Thống kê về dữ liệu huấn luyện':
     st.caption('Trong nghiên cứu này, tập dữ liệu Breast Ultrasound Images (BUI) được xây dựng bằng cách kết hợp từ hai nguồn dữ liệu công khai trên nền tảng Kaggle, bao gồm: Breast Ultrasound Images Dataset (BUSI) do Arya Shah cung cấp , và BUS-UCLM Breast Ultrasound Dataset do Orvile cung cấp . Tập dữ liệu tổng hợp này bao gồm 1578 ảnh siêu âm vú đã được đánh giá và chú thích, với các mặt nạ phân đoạn tương ứng.')
     st.caption('Nội dung nghiên cứu khoa học và ứng dụng của nhóm được thiết kế dựa trên việc huấn luyện nhóm dữ liệu Breast Ultrasound Images Dataset. Dữ liệu đã được tiền xử lý và thay đổi kích thước về 256 x 256. Thông tin chi tiết của tập dữ liệu có thể tìm được ở dưới đây: ')
     st.caption('*"https://www.kaggle.com/datasets/aryashah2k/breast-ultrasound-images-dataset/data"*')
-    st.caption('*"https://www.kaggle.com/datasets/aryashah2k/breast-ultrasound-images-dataset/data"*')
+    st.caption('*"https://www.kaggle.com/datasets/orvile/bus-uclm-breast-ultrasound-dataset"*')
     
 elif app_mode=='Ứng dụng chẩn đoán':
     classifier, segmentor = load_model()
