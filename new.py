@@ -159,41 +159,72 @@ elif app_mode=='Ứng dụng chẩn đoán':
     classifier, segmentor = load_model()
     st.title('Ứng dụng chẩn đoán bệnh ung thư vú dựa trên ảnh siêu âm vú')
 
-    file = st.file_uploader("Bạn vui lòng nhập ảnh siêu âm vú để phân loại ở đây", type=["jpg", "png"])
-# 
+    files = st.file_uploader("Bạn vui lòng nhập ảnh siêu âm vú", type=["jpg", "png"],
+                             accept_multiple_files=True)
 
-    if file is None:
-        st.text('Đang chờ tải lên....')
-
+    if not files:
+        st.info('Đang chờ tải lên...')
     else:
-        slot = st.empty()
-        slot.text('Hệ thống đang thực thi chẩn đoán....')
-        
-        classify_output, segment_output = preprocessing_uploader(file, classifier, segmentor)
-        test_image = Image.open(file)
-        st.image(test_image, caption="Ảnh đầu vào", width = 400)
-        class_names = ['benign', 'malignant','normal']
-        result_name = class_names[np.argmax(classify_output)]
-        st.image(segment_output, caption="Ảnh khối u", width = 400)
-        if str(result_name) == 'benign':
-            statement = str('Chẩn đoán của mô hình học máy: **Bệnh nhân có khối u lành tính.**')
-            st.error(statement)
-        elif str(result_name) == 'malignant':
-            statement = str('Chẩn đoán của mô hình học máy: **Bệnh nhân mắc ung thư vú.**')
-            st.warning(statement)
-        elif str(result_name) == 'normal':
-            statement = str('Chẩn đoán của mô hình học máy: **Không có dấu hiệu khối u ở vú.**')
-        slot.success('Hoàn tất!')
+        class_names = ['benign', 'malignant', 'normal']
+        rows = []  # để kết xuất CSV
 
-#         st.success(output)
-     
-        #Plot bar chart
-        bar_frame = pd.DataFrame({'Xác suất dự đoán': [classify_output[0,0] *100, classify_output[0,1]*100, classify_output[0,2]*100], 
-                                   'Loại chẩn đoán': ["Lành tính", "Ác tính", "Bình thường"]
-                                 })
-        bar_chart = alt.Chart(bar_frame).mark_bar().encode(y = 'Xác suất dự đoán', x = 'Loại chẩn đoán' )
-        st.altair_chart(bar_chart, use_container_width = True)
-        #Note
-        st.write('- **Xác suất bệnh nhân có khối u lành tính là**: *{}%*'.format(round(classify_output[0,0] *100,2)))
-        st.write('- **Xác suất bệnh nhân mắc ung thư vú là**: *{}%*'.format(round(classify_output[0,1] *100,2)))
-        st.write('- **Xác suất bệnh nhân khỏe mạnh là**: *{}%*'.format(round(classify_output[0,2] *100,2)))
+        for file in files:
+            slot = st.empty()
+            slot.text(f'Đang chẩn đoán: {file.name} ...')
+
+            # Suy luận
+            classify_output, segment_prob, orig_256 = preprocessing_uploader(file, classifier, segmentor)
+            probs = classify_output[0]  # (3,)
+            pred_idx = int(np.argmax(probs))
+            pred_name = class_names[pred_idx]
+            confidence = float(np.max(probs))  # độ tự tin = max softmax
+
+            # Overlay mask
+            overlay = make_overlay(orig_256, segment_prob, threshold=th, alpha=alpha)
+
+            # Hiển thị
+            col1, col2 = st.columns(2)
+            with col1:
+                st.image((orig_256*255).astype(np.uint8), caption=f"Ảnh chuẩn hóa 256×256: {file.name}", width=400)
+                st.image(overlay, caption=f"Overlay mask (th={th:.2f}, α={alpha:.2f})", width=400)
+            with col2:
+                st.markdown(f"**Kết luận phân loại:** `{pred_name}`")
+                st.markdown(f"**Độ tự tin (max softmax):** `{confidence:.3f}`")
+                if confidence < low_conf_bar:
+                    st.warning(f"Độ tự tin thấp (< {low_conf_bar:.2f}). Vui lòng thận trọng khi diễn giải.")
+                else:
+                    st.success("Độ tự tin đạt yêu cầu.")
+
+                # Biểu đồ cột xác suất
+                bar_frame = pd.DataFrame({
+                    'Loại chẩn đoán': ["Lành tính", "Ác tính", "Bình thường"],
+                    'Xác suất dự đoán': [probs[0]*100, probs[1]*100, probs[2]*100]
+                })
+                bar_chart = alt.Chart(bar_frame).mark_bar().encode(
+                    y='Xác suất dự đoán', x='Loại chẩn đoán'
+                )
+                st.altair_chart(bar_chart, use_container_width=True)
+
+                st.write('- **Lành tính**: *{}%*'.format(round(probs[0]*100,2)))
+                st.write('- **Ác tính**: *{}%*'.format(round(probs[1]*100,2)))
+                st.write('- **Bình thường**: *{}%*'.format(round(probs[2]*100,2)))
+
+            slot.success('Hoàn tất!')
+
+            # Lưu dòng kết quả cho CSV
+            rows.append({
+                "filename": file.name,
+                "cls_pred": pred_name,
+                "prob_benign": probs[0],
+                "prob_malignant": probs[1],
+                "prob_normal": probs[2],
+                "uncertainty(1-maxprob)": 1.0 - confidence,
+                "confidence_maxprob": confidence
+            })
+
+        # Xuất CSV
+        df = pd.DataFrame(rows)
+        st.subheader("Kết quả tổng hợp")
+        st.dataframe(df, use_container_width=True)
+        csv = df.to_csv(index=False).encode('utf-8-sig')
+        st.download_button("Tải CSV kết quả", csv, file_name="predictions.csv", mime="text/csv")
