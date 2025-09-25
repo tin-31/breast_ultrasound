@@ -132,7 +132,7 @@ if app_mode=='Thông tin chung':
     """, unsafe_allow_html=True)
     
     st.markdown('<p class="big-font"> Học sinh thực hiện </p>', unsafe_allow_html=True)
-    st.markdown('<p class="name"> Lê Vũ Anh Tin - 10TH </p>', unsafe_allow_html=True)
+    st.markdown('<p class="name"> Lê Vũ Anh Tin - 11TH </p>', unsafe_allow_html=True)
     tin_ava = Image.open('Tin.jpg')
     st.image(tin_ava)
     st.markdown('<p class="big-font"> Trường học tham gia cuộc thi </p>', unsafe_allow_html=True)
@@ -150,9 +150,10 @@ elif app_mode=='Thống kê về dữ liệu huấn luyện':
     }
     </style>
     """, unsafe_allow_html=True)
-    st.caption('Tập dữ liệu ảnh siêu âm vú được lấy từ kho lưu trữ công cộng do bệnh viện Baheya, Cairo, Ai Cập cung cấp. Dữ liệu được thu thập lúc ban đầu bao gồm hình ảnh siêu âm vú ở phụ nữ trong độ tuổi từ 25 đến 75 tuổi. Số liệu này được thu thập vào năm 2018. Số lượng bệnh nhân là 600 bệnh nhân nữ. Bộ dữ liệu bao gồm 780 hình ảnh với kích thước hình ảnh trung bình là 500 * 500 pixel. Các hình ảnh có định dạng PNG. Hình ảnh được chia làm 3 loại là bình thường, lành tính và ác tính. ')
+    st.caption('Trong nghiên cứu này, tập dữ liệu Breast Ultrasound Images (BUI) được xây dựng bằng cách kết hợp từ hai nguồn dữ liệu công khai trên nền tảng Kaggle, bao gồm: Breast Ultrasound Images Dataset (BUSI) do Arya Shah cung cấp , và BUS-UCLM Breast Ultrasound Dataset do Orvile cung cấp . Tập dữ liệu tổng hợp này bao gồm 1578 ảnh siêu âm vú đã được đánh giá và chú thích, với các mặt nạ phân đoạn tương ứng.')
     st.caption('Nội dung nghiên cứu khoa học và ứng dụng của nhóm được thiết kế dựa trên việc huấn luyện nhóm dữ liệu Breast Ultrasound Images Dataset. Dữ liệu đã được tiền xử lý và thay đổi kích thước về 256 x 256. Thông tin chi tiết của tập dữ liệu có thể tìm được ở dưới đây: ')
     st.caption('*"https://www.kaggle.com/datasets/aryashah2k/breast-ultrasound-images-dataset/data"*')
+	st.caption('*"https://www.kaggle.com/datasets/orvile/bus-uclm-breast-ultrasound-dataset"*')
     
 elif app_mode=='Ứng dụng chẩn đoán':
     classifier, segmentor = load_model()
