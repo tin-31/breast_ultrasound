@@ -47,8 +47,8 @@ def load_model():
 
         return dice_loss
     
-    classifier = tf.keras.models.load_model('Classifier_model_2.h5')
-    segmentor = tf.keras.models.load_model('Seg_model.h5', custom_objects={'dice_loss': dice_loss})
+    classifier = tf.keras.models.load_model('Classifier_model_2_new.h5')
+    segmentor = tf.keras.models.load_model('Seg_model_new.h5', custom_objects={'dice_loss': dice_loss})
     return classifier, segmentor
 
 
