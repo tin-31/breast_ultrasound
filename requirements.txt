@@ -1,11 +1,9 @@
 opencv-python-headless
-streamlit 
-tensorflow 
+streamlit
+tensorflow
 numpy
 pandas
 altair
 Pillow
-opencv-python
 scikit-learn
 gdown
-
