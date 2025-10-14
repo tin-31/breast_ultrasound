@@ -44,7 +44,7 @@ def load_model():
 
     # ⚙️ Dòng này chỉ có trong Keras độc lập, nhưng không trong TensorFlow
     # → vì vậy ta chỉ dùng safe_mode=False để bỏ giới hạn an toàn
-    classifier = tf.keras.models.load_model("Classifier_model_2.h5")
+    classifier = tf.keras.models.load_model("Classifier_model_2.keras")
     segmentor = tf.keras.models.load_model(
         "Seg_model.keras",
         custom_objects={"dice_loss": dice_loss},
