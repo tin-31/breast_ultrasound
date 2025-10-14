@@ -34,7 +34,7 @@ your_path = r""
 # @st.cache(allow_output_mutation=True)
 def load_model():
     import tensorflow as tf
-    import keras.api._v2.keras as keras  # ⚠️ Bắt buộc: trỏ đúng vào keras gốc trong TF 2.15+
+    import keras.api._v2.keras as keras  # ⚠️ import chuẩn để bật được config
 
     def dice_loss(y_true, y_pred):
         y_true_flat = tf.reshape(y_true, [-1])
@@ -43,23 +43,16 @@ def load_model():
         union = tf.reduce_sum(y_true_flat) + tf.reduce_sum(y_pred_flat)
         return 1 - 2 * intersection / union
 
-    # ✅ Bật chế độ cho phép giải mã Lambda layer
+    # ✅ bật đúng flag trong bản keras 3
     keras.config.enable_unsafe_deserialization()
 
-    # Load model phân loại
     classifier = tf.keras.models.load_model("Classifier_model_2.h5")
-
-    # Load model phân đoạn (.keras hoặc .h5 tùy bạn)
     segmentor = tf.keras.models.load_model(
         "Seg_model.keras",
         custom_objects={"dice_loss": dice_loss},
         safe_mode=False
     )
-
     return classifier, segmentor
-
-
-
 
 def predict_class(image, model):
 # 	image = tf.cast(image, tf.float32)
