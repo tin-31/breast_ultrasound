@@ -18,7 +18,7 @@ from io import BytesIO
 # 🔹 Download pretrained models
 # ==============================
 seg_model_path = "Seg_model.keras"
-seg_model_id = "1JOgis3Yn8YuwZGxsYAj5l-mTvKy7vG2C"   # 🆕 Segmentation model
+seg_model_id = "1JOgis3Yn8YuwZGxsYAj5l-mTvKy7vG2C"   # Segmentation model
 clf_model_path = "Classifier_model_2.keras"
 clf_model_id = "1wgAMMN4qV1AHZNKe09f4xj9idO1rL7C3"  # Classification model
 
@@ -33,7 +33,7 @@ if not os.path.exists(clf_model_path):
 # ==============================
 def load_model():
     import tensorflow as tf
-    from tensorflow import keras   # ✅ Dùng keras tích hợp trong TensorFlow (ổn định hơn)
+    from tensorflow import keras
 
     def dice_loss(y_true, y_pred):
         y_true_flat = tf.reshape(y_true, [-1])
@@ -42,14 +42,24 @@ def load_model():
         union = tf.reduce_sum(y_true_flat) + tf.reduce_sum(y_pred_flat)
         return 1 - 2 * intersection / union
 
-    # ⚙️ Dòng này chỉ có trong Keras độc lập, nhưng không trong TensorFlow
-    # → vì vậy ta chỉ dùng safe_mode=False để bỏ giới hạn an toàn
-    classifier = tf.keras.models.load_model("Classifier_model_2.keras")
+    # ⚙️ Cho phép đọc Lambda layer (nếu có)
+    try:
+        keras.config.enable_unsafe_deserialization()
+    except Exception:
+        pass  # Không sao nếu bản TensorFlow không có hàm này
+
+    # ✅ Load models mà không load optimizer (tránh lỗi marshal giữa bản Python)
+    classifier = tf.keras.models.load_model(
+        clf_model_path,
+        compile=False,       # tránh lỗi marshal data / optimizer
+        safe_mode=False
+    )
+
     segmentor = tf.keras.models.load_model(
-        "Seg_model.keras",
+        seg_model_path,
         custom_objects={"dice_loss": dice_loss},
-        safe_mode=False,          # ⚠️ Bỏ kiểm tra Lambda layer
-        compile=False
+        compile=False,
+        safe_mode=False
     )
 
     return classifier, segmentor
@@ -129,7 +139,6 @@ elif app_mode == 'Thống kê về dữ liệu huấn luyện':
 elif app_mode == 'Ứng dụng chẩn đoán':
     st.title('🩺 Ứng dụng chẩn đoán bệnh ung thư vú từ ảnh siêu âm')
 
-    # Load models (chỉ chạy 1 lần)
     classifier, segmentor = load_model()
 
     file = st.file_uploader("📤 Tải ảnh siêu âm vú (jpg/png)", type=["jpg", "png"])
