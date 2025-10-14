@@ -3,7 +3,7 @@ import gdown
 
 # Model phân đoạn
 seg_model_path = "Seg_model.h5"
-seg_model_id = "1LyinwMbjccp9JtaLq3X-V69Qerz26MSo"
+seg_model_id = "1JOgis3Yn8YuwZGxsYAj5l-mTvKy7vG2C"
 if not os.path.exists(seg_model_path):
     gdown.download(f"https://drive.google.com/uc?id={seg_model_id}", seg_model_path, quiet=False)
 
