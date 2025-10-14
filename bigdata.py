@@ -32,7 +32,8 @@ if not os.path.exists(clf_model_path):
 # 🔹 Load models safely
 # ==============================
 def load_model():
-    import keras.api._v2.keras as keras  # ✅ Bản Keras chuẩn trong TF 2.15+
+    import tensorflow as tf
+    from tensorflow import keras   # ✅ Dùng keras tích hợp trong TensorFlow (ổn định hơn)
 
     def dice_loss(y_true, y_pred):
         y_true_flat = tf.reshape(y_true, [-1])
@@ -41,17 +42,14 @@ def load_model():
         union = tf.reduce_sum(y_true_flat) + tf.reduce_sum(y_pred_flat)
         return 1 - 2 * intersection / union
 
-    # ⚠️ Bật chế độ cho phép giải mã Lambda layer
-    keras.config.enable_unsafe_deserialization()
-
-    # 🧠 Load classification model
-    classifier = tf.keras.models.load_model(clf_model_path)
-
-    # 🩻 Load segmentation model
+    # ⚙️ Dòng này chỉ có trong Keras độc lập, nhưng không trong TensorFlow
+    # → vì vậy ta chỉ dùng safe_mode=False để bỏ giới hạn an toàn
+    classifier = tf.keras.models.load_model("Classifier_model_2.h5")
     segmentor = tf.keras.models.load_model(
-        seg_model_path,
+        "Seg_model.keras",
         custom_objects={"dice_loss": dice_loss},
-        safe_mode=False
+        safe_mode=False,          # ⚠️ Bỏ kiểm tra Lambda layer
+        compile=False
     )
 
     return classifier, segmentor
