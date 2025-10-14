@@ -33,23 +33,31 @@ your_path = r""
 # st.set_option('deprecation.showfileUploaderEncoding', False)
 # @st.cache(allow_output_mutation=True)
 def load_model():
+    import tensorflow as tf
+    import keras
+
     def dice_loss(y_true, y_pred):
-        # Flatten the predictions and ground truth
         y_true_flat = tf.reshape(y_true, [-1])
         y_pred_flat = tf.reshape(y_pred, [-1])
-
-        # Compute the intersection and union
         intersection = tf.reduce_sum(y_true_flat * y_pred_flat)
         union = tf.reduce_sum(y_true_flat) + tf.reduce_sum(y_pred_flat)
+        return 1 - 2 * intersection / union
 
-        # Compute the Dice loss
-        dice_loss = 1 - 2 * intersection / union
+    # ⚠️ Cho phép đọc Lambda layer (vì model chứa lambda function)
+    keras.config.enable_unsafe_deserialization()
 
-        return dice_loss
-    
-    classifier = tf.keras.models.load_model('Classifier_model_2.h5')
-    segmentor = tf.keras.models.load_model('Seg_model.h5', custom_objects={'dice_loss': dice_loss})
+    # Load model phân loại
+    classifier = tf.keras.models.load_model("Classifier_model_2.h5")
+
+    # Load model phân đoạn (file .keras hoặc .h5 tùy bạn)
+    segmentor = tf.keras.models.load_model(
+        "Seg_model.keras",
+        custom_objects={"dice_loss": dice_loss},
+        safe_mode=False
+    )
+
     return classifier, segmentor
+
 
 
 def predict_class(image, model):
