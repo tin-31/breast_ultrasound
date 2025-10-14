@@ -19,8 +19,8 @@ from io import BytesIO
 # ==============================
 seg_model_path = "Seg_model.keras"
 seg_model_id = "1JOgis3Yn8YuwZGxsYAj5l-mTvKy7vG2C"   # 🆕 Segmentation model
-clf_model_path = "Classifier_model_2.h5"
-clf_model_id = "1fXPICuTkETep2oPiA56l0uMai2GusEJH"  # Classification model
+clf_model_path = "Classifier_model_2.keras"
+clf_model_id = "1wgAMMN4qV1AHZNKe09f4xj9idO1rL7C3"  # Classification model
 
 if not os.path.exists(seg_model_path):
     gdown.download(f"https://drive.google.com/uc?id={seg_model_id}", seg_model_path, quiet=False)
