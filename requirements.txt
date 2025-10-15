@@ -1,9 +1,10 @@
-opencv-python-headless
 streamlit
-tensorflow
+tensorflow==2.18.0
+keras==3.4.1
 numpy
 pandas
 altair
 Pillow
+opencv-python-headless
 scikit-learn
 gdown
