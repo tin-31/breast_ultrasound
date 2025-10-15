@@ -55,12 +55,7 @@ def load_model():
         safe_mode=False
     )
 
-    segmentor = tf.keras.models.load_model(
-        seg_model_path,
-        custom_objects={"dice_loss": dice_loss},
-        compile=False,
-        safe_mode=False
-    )
+    segmentor = tf.keras.models.load_model("Seg_model_saved", compile=False)
 
     return classifier, segmentor
 
