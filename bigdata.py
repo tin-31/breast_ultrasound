@@ -160,7 +160,6 @@ elif app_mode == "Ứng dụng chẩn đoán":
 
         class_names = ["benign", "malignant", "normal"]
         result = class_names[np.argmax(pred_class)]
-
         if result == "benign":
             st.success("🟢 Kết luận: Khối u lành tính.")
         elif result == "malignant":
