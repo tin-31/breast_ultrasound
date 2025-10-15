@@ -1,10 +1,10 @@
-streamlit
-tensorflow==2.18.0
-keras==3.4.1
-numpy
-pandas
-altair
-Pillow
-opencv-python-headless
-scikit-learn
-gdown
+streamlit==1.50.0
+tensorflow==2.20.0         # ✅ phiên bản mới nhất tương thích Python 3.13
+keras==3.11.3              # ✅ tương thích TF 2.20
+opencv-python-headless==4.12.0.88
+numpy==2.2.6
+pandas==2.3.3
+altair==5.5.0
+Pillow==11.3.0
+scikit-learn==1.7.2
+gdown==5.2.0
